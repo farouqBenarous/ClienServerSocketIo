@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
-
+const {User ,validatelogin , validatesignup} = require('../models/user') ;
 
 // signup
 router.post('/signup', async (req, res) => {
@@ -12,18 +12,17 @@ router.post('/signup', async (req, res) => {
 
     let exist = await User.findOne({ email: req.body.email });
     if (exist) return res.status(400).send('email already registered.');
-    exist = await User.findOne({ username: req.body.username });
-    if (exist) return res.status(400).send('username already registered.');
 
-    let user  = new User ({email: req.body.email   , username: req.body.username  , password : req.body.password   })
+    let user  = new User ({email: req.body.email   , firstname : req.body.firstname  ,lastname: req.body.lasname  , password : req.body.password   })
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(user.password, salt);
     await user.save();
 
     const token = user.generateAuthToken();
-    return  res.header('x-auth-token', token).send(_.pick(user, ['_id', 'username', 'email']))  ;
+    return  res.header('x-auth-token', token).send(_.pick(user, ['_id', 'firstname', 'email']))  ;
 });
+
 
 // Login
 router.post('/login', async (req, res) => {
