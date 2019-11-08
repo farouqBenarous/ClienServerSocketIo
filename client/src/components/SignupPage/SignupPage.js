@@ -12,7 +12,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { withStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-import socketIOClient from "socket.io-client";
+import { withRouter } from 'react-router-dom'
+import Cookies from 'universal-cookie';
+import NavBar from '../NavBar/NavBar';
 
 const useStyles = theme => ({
   '@global': {
@@ -42,20 +44,56 @@ const useStyles = theme => ({
 
 
 class SignupPage extends React.Component {
+
   constructor(props) {
     super(props);
-    this.state = {};
-    this.handleClick = this.handleClick.bind(this);
+    this.state = {
+      email : '',
+      firstname : '',
+      lastname : '',
+      password: ''
+    };
+
   }
-  handleClick(i) {
-    console.log('clicked')
+  handleInputChange = (event) => {
+    const { value, name } = event.target;
+    this.setState({
+      [name]: value
+    });
+  }
+  onSubmit = (event) => {
+    const cookies = new Cookies();
+    event.preventDefault();
+    fetch('http://localhost:5050/api/users/signup', {
+      method: 'POST',
+      body: JSON.stringify(this.state),
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }).then( (results) => {
+          if (results.status === 200) {
+            return results.json()
+          } else {
+            const error = new Error(results.error);
+            throw error
+          } }
+        )
+        .then(res => {
+          cookies.set('token', res.token, { path: '/' });
+          this.props.history.push('/dashboard');
+        })
+        .catch(err => {
+          alert('Error logging in please try again');
+        });
   }
 
 
   render() {
     const { classes } = this.props
     return (
-        <Container component="main" maxWidth="xs">
+        <div>
+          <NavBar />
+        <Container component="main" maxWidth="xs" >
           <CssBaseline />
           <div className={classes.paper}>
             <Avatar className={classes.avatar}>
@@ -64,18 +102,20 @@ class SignupPage extends React.Component {
             <Typography component="h1" variant="h5">
               Sign up
             </Typography>
-            <form className={classes.form} noValidate>
+            <form className={classes.form} noValidate onSubmit={this.onSubmit}>
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={6}>
                   <TextField
                       autoComplete="fname"
-                      name="firstName"
+                      name="firstname"
                       variant="outlined"
                       required
                       fullWidth
-                      id="firstName"
+                      id="firstname"
                       label="First Name"
                       autoFocus
+                      value={this.state.firstname}
+                      onChange={this.handleInputChange}
                   />
                 </Grid>
                 <Grid item xs={12} sm={6}>
@@ -83,10 +123,13 @@ class SignupPage extends React.Component {
                       variant="outlined"
                       required
                       fullWidth
-                      id="lastName"
+                      id="lastname"
                       label="Last Name"
-                      name="lastName"
+                      name="lastname"
                       autoComplete="lname"
+                      value={this.state.lastname}
+                      onChange={this.handleInputChange}
+
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -98,6 +141,9 @@ class SignupPage extends React.Component {
                       label="Email Address"
                       name="email"
                       autoComplete="email"
+                      value={this.state.email}
+                      onChange={this.handleInputChange}
+
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -110,6 +156,9 @@ class SignupPage extends React.Component {
                       type="password"
                       id="password"
                       autoComplete="current-password"
+                      value={this.state.password}
+                      onChange={this.handleInputChange}
+
                   />
                 </Grid>
                 <Grid item xs={12}>
@@ -125,7 +174,6 @@ class SignupPage extends React.Component {
                   variant="contained"
                   color="primary"
                   className={classes.submit}
-                  onClick={this.handleClick()}
               >
                 Sign Up
               </Button>
@@ -142,8 +190,9 @@ class SignupPage extends React.Component {
 
           </Box>
         </Container>
+        </div>
     );
   }
 }
 
-export default withStyles(useStyles, { withTheme: true })(SignupPage);
+export default withRouter(withStyles(useStyles, { withTheme: true })(SignupPage)) ;

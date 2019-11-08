@@ -66,5 +66,5 @@ function validateUserLogin(user) {
 
 
 exports.User = User;
-exports.validatesignup = validateUserSignup;
-exports.validatelogin = validateUserLogin;
+exports.validateUserSignup = validateUserSignup;
+exports.validateUserLogin = validateUserLogin;

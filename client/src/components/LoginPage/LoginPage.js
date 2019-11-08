@@ -12,9 +12,10 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import {withStyles} from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
-
-
+import { withRouter } from 'react-router-dom'
+import Cookies from 'universal-cookie';
 import './LoginPage.css';
+import NavBar from '../NavBar/NavBar';
 
 
 
@@ -44,85 +45,121 @@ const useStyles = theme => ({
 }) ;
 
 
-
 class LoginPage extends React.Component {
   constructor(props) {
     super(props);
-    this.state = {};
-    this.handleClick = this.handleClick.bind(this);
-  }
-  handleClick(i) {
-    console.log('clicked')
+    this.state = {
+      email : '',
+      password: '' };
   }
 
+  handleInputChange = (event) => {
+    const { value, name } = event.target;
+    this.setState({
+      [name]: value
+    });
+  }
+    onSubmit = (event) => {
+      const cookies = new Cookies();
+      event.preventDefault();
+      fetch('http://localhost:5050/api/users/login', {
+        method: 'POST',
+        body: JSON.stringify(this.state),
+        headers: {
+          'Content-Type': 'application/json',
+          }
+      })
+          .then( (results) => {
+                if (results.status === 200) {
+                  return results.json()
+                } else {
+                  const error = new Error(results.error);
+                  throw error
+                } }
+            )
+          .then(res => {
+              cookies.set('token', res.token, { path: '/' });
+              this.props.history.push('/dashboard');
+          })
+          .catch(err => {
+            alert('Error logging in please try again');
+          });
+  }
 
   render() {
     const { classes } = this.props
-    return (<Container component="main" maxWidth="xs">
-      <CssBaseline />
-      <div className={classes.paper}>
-        <Avatar className={classes.avatar}>
-          <LockOutlinedIcon />
-        </Avatar>
-        <Typography component="h1" variant="h5">
-          Sign in
-        </Typography>
-        <form className={classes.form} noValidate>
-          <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              id="email"
-              label="Email Address"
-              name="email"
-              autoComplete="email"
-              autoFocus
-          />
-          <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              name="password"
-              label="Password"
-              type="password"
-              id="password"
-              autoComplete="current-password"
-          />
-          <FormControlLabel
-              control={<Checkbox value="remember" color="primary" />}
-              label="Remember me"
-          />
-          <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              color="primary"
-              className={classes.submit}
-              onClick={this.handleClick}
-          >
-            Sign In
-          </Button>
-          <Grid container>
-            <Grid item xs>
-              <Link href="#" variant="body2">
-                Forgot password?
-              </Link>
-            </Grid>
-            <Grid item>
-              <Link href="/signup" variant="body2">
-                {"Don't have an account? Sign Up"}
-              </Link>
-            </Grid>
-          </Grid>
-        </form>
-      </div>
-      <Box mt={8}>
-      </Box>
-    </Container>
+    return (
+        <div>
+        <NavBar/>
+          <Container component="main" maxWidth="xs">
+            <CssBaseline />
+            <div className={classes.paper}>
+              <Avatar className={classes.avatar}>
+                <LockOutlinedIcon />
+              </Avatar>
+              <Typography component="h1" variant="h5">
+                Sign in
+              </Typography>
+              <form className={classes.form} noValidate onSubmit={this.onSubmit}>
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    id="email"
+                    label="Email Address"
+                    name="email"
+                    autoComplete="email"
+                    autoFocus
+                    value={this.state.email}
+                    onChange={this.handleInputChange}
+
+                />
+                <TextField
+                    variant="outlined"
+                    margin="normal"
+                    required
+                    fullWidth
+                    name="password"
+                    label="Password"
+                    type="password"
+                    id="password"
+                    autoComplete="current-password"
+                    value={this.state.password}
+                    onChange={this.handleInputChange}
+
+                />
+                <FormControlLabel
+                    control={<Checkbox value="remember" color="primary" />}
+                    label="Remember me"
+                />
+                <Button
+                    type="submit"
+                    fullWidth
+                    variant="contained"
+                    color="primary"
+                    className={classes.submit}
+
+                >
+                  Sign In
+                </Button>
+                <Grid container>
+                  <Grid item>
+                    <Link href="/signup" variant="body2">
+                      {"Don't have an account? Sign Up"}
+                    </Link>
+                  </Grid>
+                </Grid>
+              </form>
+
+            </div>
+            <Box mt={8}>
+            </Box>
+          </Container>
+
+        </div>
     );
   }
 }
 
-export default withStyles(useStyles, { withTheme: true })(LoginPage);
+export default withRouter(withStyles(useStyles, { withTheme: true })( LoginPage)) ;

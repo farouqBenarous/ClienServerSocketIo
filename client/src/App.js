@@ -6,7 +6,18 @@ import {
 import HomePage from './components/HomePage/HomePage';
 import LoginPage from './components/LoginPage/LoginPage';
 import SignupPage from "./components/SignupPage/SignupPage";
+import DashboardPage from "./components/DashboardPage/DashboardPage";
+import AddProductPage from "./components/AddProductPage/AddProductPage";
+import auth from "./components/auth";
 import './App.css';
+
+
+const Dashboard = () =>  (
+    <DashboardPage />
+);
+const AddProduct = () =>  (
+    <AddProductPage />
+);
 
 const Home = () => (
   <HomePage />
@@ -24,9 +35,13 @@ class App extends Component {
     return (
       <Router>
         <div className="App">
+
           <Route exact path="/" component={Home} />
-          <Route path="/login" component={Login} />
-          <Route path="/signup" component={Signup} />
+          <Route  path="/login" component={Login} />
+          <Route path="/signup" component={Signup}   />
+          <Route path="/dashboard" component={auth(Dashboard)} />
+          <Route path="/addproduct" component={auth(AddProduct)} />
+
         </div>
       </Router>
     );

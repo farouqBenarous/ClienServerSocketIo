@@ -30,18 +30,22 @@ router.put('/'  ,auth ,async (req , res) => {
     const { error } = validateproduct(req.body);
     if (error) return res.status(400).send(error.details[0].message);
 
-    if (!_.isEmpty(req.query.name) ) {
-        return es.status(400).send('You have to specify the name if you want to delete ')
+    if (_.isEmpty(req.query.name) ) {
+        return res.status(400).send('You have to specify the name if you want to Edit ')
     }
 
-    let  result  = await Product.updateOne({name : req.query.name} , {name : req.body.name ,type : req.body.type , price : req.body.price , rating : req.body.rating ,
-        warranty_years : req.body.warranty_years ,available :   req.body . available})
+    let result  = await Product.findOne ({name : req.query.name })
+    if (_.isEmpty(result)) {
+        return res.status(400).send('No product found with this name ')
+    }
+    let  del  = await Product.updateOne({name : req.query.name} ,{name : req.body.name ,type : req.body.type , price : req.body.price , rating : req.body.rating ,
+        warranty_years : req.body.warranty_years ,available :   req.body . available} )
         .then((result) => { res.status(200).send('Product Change Sucessfully  new Product ' +result)})
         .catch((err) => { res.status(500).send('Internal server error try later error : '+err)});
 } );
 
 // display the products by filters
-router.get('/api/products', async (req, res) => {
+router.get('/', async (req, res) => {
     // if the filters are empty so return all the products
     if (_.isEmpty(req.query.name) && _.isEmpty(req.query._id) && _.isEmpty(req.query.price) && _.isEmpty(req.query.rating) && _.isEmpty(req.query.warranty_years)
         &&_.isEmpty(req.query.available)) {
@@ -77,19 +81,25 @@ router.get('/api/products', async (req, res) => {
 
 
     if (_.isEmpty(response) || _.isEmpty(response[0]) ) {
-        console.log('no response with the given filteres')
         return res.status(404).send('no Product found with these Filters')}
 
     response = _.uniqBy (response ,'_id')
-    return  res.status(200).send(response)
+    return res.status(200).json({'products' :response}).send();
+
 });
 
 // Delete a product by a given name
 router.delete('/' ,auth, async (req , res) => {
-    if (!_.isEmpty(req.query.name) ) {
+    console.log(req.body)
+    if (_.isEmpty(req.body.name) ) {
     return res.status(400).send('You have to specify the name if you want to delete ')
     }
-    let result  = await Product.deleteOne ({name : req.query.name }).
+    let result  = await Product.findOne ({name : req.body.name })
+    if (_.isEmpty(result)) {
+        return res.status(400).send('Node product found with this name ')
+    }
+
+    let del = await Product.deleteOne ({name : req.body.name }).
     then((result) => {res.status(200).send('Product deleted')})
         .catch((err) =>  { res.status(500).send('internal server error try later  error : '+err)})
 });
