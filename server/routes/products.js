@@ -4,12 +4,11 @@ const _ = require('lodash');
 const express = require('express');
 const router = express.Router();
 
+const axios = require('axios')
 const app = require('express')();
 const http = require("http").createServer(app);
 var io = require('socket.io')(http);
-
-
-
+let interval;
 
 
 // create a product
@@ -106,20 +105,33 @@ router.delete('/' ,auth, async (req , res) => {
 
 
 
-
 // display the products in realtime using socket io
-app.get('/api/products', async (req, res) => {
 
-    return  res.status(200).send(response)
-});
+const getApiAndEmit = async socket => {
+    try {
+
+        const res = await axios.get('http://localhost:5050/api/products'); // Getting the data from Database
+        socket.emit("RealTime",res.data) ; // Emitting a new message. It will be consumed by the client
+
+    } catch (error) {
+        console.error(error);
+    }
+};
 
 
-io.on('connection', function(socket){
-    console.log('a user connected');
+
+io.on('connection', async (socket) =>{
+    console.log("New client connected");
+    if (interval) {
+        clearInterval(interval);
+    }
+    interval = setInterval(() => getApiAndEmit(socket), 5000);
+
+    socket.on("disconnect", () => {console.log("Client disconnected");});
 });
 
 http.listen(6060, function(){
-    console.log('listening on *:3000');
+    console.log('listening on *:6060');
 });
 
 

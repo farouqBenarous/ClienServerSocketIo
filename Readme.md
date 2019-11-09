@@ -16,7 +16,7 @@ The Client side is React.js
   
    `Port=port`
       
-* second install the Libraries using npm so : `npm install`
+* install the Libraries using npm so : `npm install`
 
 * finally run the server by (of course after you install node js ) : `node index.js`
 # Run Client 

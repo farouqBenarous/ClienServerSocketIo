@@ -7,6 +7,7 @@ import CardMedia from '@material-ui/core/CardMedia';
 import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
+import {  green } from '@material-ui/core/colors';
 
 /*import Toolbar from '@material-ui/core/Toolbar';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -30,9 +31,17 @@ import InputLabel from "@material-ui/core/InputLabel";
 import Select from "@material-ui/core/Select";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormHelperText from "@material-ui/core/FormHelperText";
-
-//import socketIOClient from "socket.io-client";
+import Snackbar from "@material-ui/core/Snackbar";
+import SnackbarContent from "@material-ui/core/SnackbarContent";
+/*
+import Snackbar from "@material-ui/core/Snackbar";
+import SnackbarContent from "@material-ui/core/SnackbarContent";
+*/
+import socketIOClient from "socket.io-client";
 const useStyles = theme => ({
+    success: {
+        backgroundColor: green[600],
+    },
     icon: {
         marginRight: theme.spacing(2),
     },
@@ -65,11 +74,15 @@ const useStyles = theme => ({
 });
 
 class Products extends Component {
+    // general methods for the Component
     constructor(props) {
         super(props);
         this.state = {
+            endpoint: "http://localhost:6060/" ,
             cards:[],
-            open : false ,
+            openedit : false ,
+            opendelete : false ,
+            openview : false ,
             setOpen : false ,
             name : '',
             type : '',
@@ -77,7 +90,10 @@ class Products extends Component {
             rating : '' ,
             warranty_years : '',
             available : '',
+            snackmessage : '' ,
+            opensnack : false
         }
+
     }
     handleInputChange = (event) => {
         const { value, name } = event.target;
@@ -86,33 +102,29 @@ class Products extends Component {
         });
     }
     componentDidMount( ) {
-        const cookies = new Cookies();
-        fetch('http://localhost:5050/api/products', {
-            method: 'GET',
-            headers: {
-                'x-auth-token': cookies.get('token',{ path: '/' }) ,
-                'Content-Type': 'application/json'
-            }
-        })
-            .then( (results) => {
-                if (results.status === 200) {
-                    return results.json()
-                } else {
-                    const error = new Error(results.error);
-                    throw error
-                } }
-            )
-            .then(res => {this.setState({cards: res});  })
-            .catch(err => {
-                alert('Error logging in please try again');
-            });
+        const socket = socketIOClient(this.state.endpoint);
+        socket.on("RealTime", data => this.setState({ cards: data })
+        );
+
+    }
+    closesnackbar  = () => {
+        this.setState({ 'opensnack' :false , snackmessage :''});
 
     }
 
 
+    // method to handle the dialoge of the view card bigger
+    onviewcard =  params => even => {
+        event.preventDefault();
+
+    }
+
+    // methods to handle dialogue of the delete card
+    showonDeletefunction =  params => event => {
+        event.preventDefault();
+        this.setState({ 'opendelete' :true});
+    }
     onDeletefunction = params => event => {
-        const nextValue = event.target.value;
-        console.log('nextvalue' + nextValue)
         const cookies = new Cookies();
         event.preventDefault();
         fetch('http://localhost:5050/api/products', {
@@ -125,7 +137,8 @@ class Products extends Component {
         })
             .then( (results) => {
                 if (results.status === 200) {
-                    alert('bsahtek yaaw')
+                    this.setState({ 'opendelete' :false , 'opensnack' : true ,  snackmessage : 'The Product is Deleted '});
+
                 } else {
                     const error = new Error(results.error);
                     throw error
@@ -135,16 +148,30 @@ class Products extends Component {
                 alert('Error logging in please try again');
             });
     }
+    handleClosedelete  = () => {
+        this.setState({ 'opendelete' :false});
 
+    }
 
+    // methods to handle dialogue of the Edit card
     onEdit =  params => event => {
-        this.setState({ 'open' :true});
-        this.setState({ 'setOpen' :true});
+        event.preventDefault();
+        this.setState({ 'openedit' :true});
+        this.setState({
+            name : params.name ,
+            type : params.type,
+            price : params.price ,
+            rating :params.rating ,
+            warranty_years : params.warranty_years,
+            available : params.available
+            });
+
+
     }
     saveEdit = params => event => {
                 const cookies = new Cookies();
                 event.preventDefault();
-                fetch('http://localhost:5050/api/products?name='+this.state.name, {
+                fetch('http://localhost:5050/api/products?name='+params.name, {
                     method: 'PUT',
                     body: JSON.stringify(this.state),
                     headers: {
@@ -154,8 +181,7 @@ class Products extends Component {
                 })
                     .then( (results) => {
                         if (results.status === 200) {
-                            alert('Bsahtek yaaw');
-                            this.setState({ 'open' :false});
+                            this.setState({ 'openedit' :false , opensnack : true , snackmessage : 'The Product is Edited '});
                         } else {
                             const error = new Error(results.error);
                             throw error
@@ -166,11 +192,10 @@ class Products extends Component {
                     });
 
     };
-    handleClose = () => {
-        this.setState({ 'open' :false});
-        this.setState({ 'setOpen' :false});
-
+    handleCloseedit = () => {
+        this.setState({ 'openedit' :false});
     }
+
     render() {
         //const cookies = new Cookies();
         const { classes } = this.props
@@ -178,10 +203,12 @@ class Products extends Component {
             <div>
                 {
                     <Container className={classes.cardGrid} maxWidth="md">
-                        {/* End hero unit */}
+                        {/* End hero unit */
+    }
                         <Grid container spacing={4}>
                             {this.state.cards.map(card => (
                                 <Grid item key={card.id} xs={12} sm={6} md={4}>
+
                                     <Card className={classes.card}>
                                         <CardMedia
                                             className={classes.cardMedia}
@@ -189,21 +216,49 @@ class Products extends Component {
                                             title="Image title"
                                         />
                                         <CardContent className={classes.cardContent}>
-                                            <Typography gutterBottom variant="h5" component="h2">
+                                            <Typography gutterBottom variant="h4" component="h4" >
                                                 {card.name}
                                             </Typography>
-                                            <Typography>
-                                                This is a media card. You can use this section to describe the content.
+                                            <Typography >
+                                                Item  : {card.type}
+                                            </Typography>
+                                            <Typography gutterBottom variant="h6" component="h6" >
+                                                Price : {card.price} Euro
                                             </Typography>
                                         </CardContent>
                                         <CardActions>
-                                            <Button size="small" color="primary" onClick={this.onDeletefunction(card) }>
+                                            <Button size="small" color="primary" onClick={this.onviewcard(card) }>
+                                                View
+                                            </Button>
+                                            <Button size="small" color="primary" onClick={this.showonDeletefunction(card)}>
                                                 Delete
                                             </Button>
                                             <Button size="small" color="primary" onClick={this.onEdit(card)}>
                                                 Edit
                                             </Button>
-                                            <Dialog open={this.state.open} onClose={this.handleClose} aria-labelledby="form-dialog-title">
+
+                                            <Dialog
+                                                open={this.state.opendelete}
+                                                onClose={this.handleCloseedit}
+                                                aria-labelledby="alert-dialog-title"
+                                                aria-describedby="alert-dialog-description"
+                                            >
+                                                <DialogTitle id="alert-dialog-title">{"Product Danger Action !"}</DialogTitle>
+                                                <DialogContent>
+                                                    <DialogContentText id="alert-dialog-description">
+                                                     You are going to Delete The Item Agree ?
+                                                    </DialogContentText>
+                                                </DialogContent>
+                                                <DialogActions>
+                                                    <Button onClick={this.handleClosedelete} color="primary">
+                                                        Cancel
+                                                    </Button>
+                                                    <Button onClick={this.onDeletefunction(card)} color="primary" autoFocus>
+                                                        Confirm
+                                                    </Button>
+                                                </DialogActions>
+                                            </Dialog>
+                                            <Dialog open={this.state.openedit} onClose={this.handleClose} aria-labelledby="form-dialog-title">
                                                 <DialogTitle id="form-dialog-title">Subscribe</DialogTitle>
                                                 <DialogContent>
                                                     <DialogContentText>
@@ -308,7 +363,7 @@ class Products extends Component {
                                                 </DialogContent>
 
                                                 <DialogActions>
-                                                    <Button onClick={this.handleClose} color="primary">
+                                                    <Button onClick={this.handleCloseedit} color="primary">
                                                         Cancel
                                                     </Button>
                                                     <Button onClick={this.saveEdit(card)} color="primary">
@@ -319,11 +374,29 @@ class Products extends Component {
 
                                         </CardActions>
                                     </Card>
+
                                 </Grid>
                             ))}
                         </Grid>
                     </Container>
                 }
+                <Snackbar
+                    anchorOrigin={{
+                        vertical: 'bottom',
+                        horizontal: 'left',
+                    }}
+                    open={this.state.opensnack}
+                    onChange={this.handleInputChange}
+                    autoHideDuration={2000}
+                    onClose={this.closesnackbar}
+                >
+                    <SnackbarContent
+                        className={classes.success}
+                        aria-describedby="client-snackbar"
+                        message={<span id="client-snackbar" className={classes.message}>{this.state.snackmessage}</span>}
+
+                    />
+                </Snackbar>
             </div>
         );
     }

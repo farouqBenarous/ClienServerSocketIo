@@ -16,8 +16,6 @@ import Typography from '@material-ui/core/Typography';
 */
 import NavBar from '../NavBar/NavBar';
 import {withStyles} from '@material-ui/core/styles';
-
-//import socketIOClient from "socket.io-client";
 import Products from "./Products";
 
 

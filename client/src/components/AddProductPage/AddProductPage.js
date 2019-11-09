@@ -24,7 +24,7 @@ import { amber, green } from '@material-ui/core/colors';
 import NavBar from '../NavBar/NavBar';
 import {withStyles} from '@material-ui/core/styles';
 import TextField from "@material-ui/core/TextField";
-
+import { withRouter } from 'react-router-dom'
 import Button from "@material-ui/core/Button";
 import InputLabel from "@material-ui/core/InputLabel";
 import Cookies from "universal-cookie";
@@ -92,7 +92,7 @@ class AddProductPage extends React.Component {
             rating : '' ,
             warranty_years : '',
             available : '',
-            open : 'false'
+            open : false
         };
     }
 
@@ -101,6 +101,10 @@ class AddProductPage extends React.Component {
         this.setState({
             [name]: value
         });
+    }
+    closesnackbar  = () => {
+        this.setState({ 'open' :false , snackmessage :''});
+
     }
     onSubmit = (event) => {
         const cookies = new Cookies();
@@ -116,15 +120,21 @@ class AddProductPage extends React.Component {
         })
             .then( (results) => {
                 if (results.status === 200) {
-                    this.setState( {open : true})
-                   // this.state.open = true
+                    this.setState( {open : true ,
+                        name : '',
+                        type : '',
+                        price : '' ,
+                        rating : '' ,
+                        warranty_years : '',
+                        available : ''})
+                    return;
                 } else {
                     const error = new Error(results.error);
                     throw error
                 } }
             )
             .catch(err => {
-                alert('Error logging in please try again');
+                alert('Error please try again' + err);
             });
     }
 
@@ -244,14 +254,15 @@ class AddProductPage extends React.Component {
                         vertical: 'bottom',
                         horizontal: 'left',
                     }}
-                    open='false'
-                    autoHideDuration={2000}
+                    open={this.state.open}
                     onChange={this.handleInputChange}
+                    autoHideDuration={3000}
+                    onClose={this.closesnackbar}
                 >
                     <SnackbarContent
                         className={classes.success}
                         aria-describedby="client-snackbar"
-                        message={<span id="client-snackbar" className={classes.message}>nicee</span>}
+                        message={<span id="client-snackbar" className={classes.message}>The Product has been Added</span>}
 
                     />
                 </Snackbar>
@@ -259,4 +270,4 @@ class AddProductPage extends React.Component {
 
         ); } }
 
-export default withStyles(useStyles, { withTheme: true })( AddProductPage) ;
+export default  withRouter  (withStyles(useStyles, { withTheme: true })( AddProductPage)  ) ;

@@ -59,7 +59,8 @@ class LoginPage extends React.Component {
       [name]: value
     });
   }
-    onSubmit = (event) => {
+
+  onSubmit = (event) => {
       const cookies = new Cookies();
       event.preventDefault();
       fetch('http://localhost:5050/api/users/login', {
