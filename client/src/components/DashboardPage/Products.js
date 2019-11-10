@@ -8,23 +8,12 @@ import Grid from '@material-ui/core/Grid';
 import Typography from '@material-ui/core/Typography';
 import Container from '@material-ui/core/Container';
 import {  green } from '@material-ui/core/colors';
-
-/*import Toolbar from '@material-ui/core/Toolbar';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import CameraIcon from '@material-ui/icons/PhotoCamera';
-import AppBar from '@material-ui/core/AppBar';
-
-import { makeStyles } from '@material-ui/core/styles';
-
-import Link from '@material-ui/core/Link';
-*/
 import TextField from '@material-ui/core/TextField';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 import DialogTitle from '@material-ui/core/DialogTitle';
-
 import { withStyles } from '@material-ui/core/styles';
 import Cookies from "universal-cookie";
 import InputLabel from "@material-ui/core/InputLabel";
@@ -33,10 +22,6 @@ import MenuItem from "@material-ui/core/MenuItem";
 import FormHelperText from "@material-ui/core/FormHelperText";
 import Snackbar from "@material-ui/core/Snackbar";
 import SnackbarContent from "@material-ui/core/SnackbarContent";
-/*
-import Snackbar from "@material-ui/core/Snackbar";
-import SnackbarContent from "@material-ui/core/SnackbarContent";
-*/
 import socketIOClient from "socket.io-client";
 const useStyles = theme => ({
     success: {
@@ -71,7 +56,15 @@ const useStyles = theme => ({
         backgroundColor: theme.palette.background.paper,
         padding: theme.spacing(6),
     },
-});
+    dialogue : {
+        padding: '20%',
+        height: '100%',
+        width: '100%',
+        display: 'flex',
+
+    }
+
+    });
 
 class Products extends Component {
     // general methods for the Component
@@ -84,6 +77,7 @@ class Products extends Component {
             opendelete : false ,
             openview : false ,
             setOpen : false ,
+            oldname : '' ,
             name : '',
             type : '',
             price : '' ,
@@ -114,8 +108,22 @@ class Products extends Component {
 
 
     // method to handle the dialoge of the view card bigger
-    onviewcard =  params => even => {
+    onviewcard =  params => event => {
         event.preventDefault();
+        this.setState({ 'openview' :true});
+        this.setState({
+            name : params.name ,
+            type : params.type,
+            price : params.price ,
+            rating :params.rating ,
+            warranty_years : params.warranty_years,
+            available : params.available
+        });
+    }
+    handleCloseview  = params => event => {
+        event.preventDefault();
+        this.setState({ 'openview' :false});
+
 
     }
 
@@ -158,6 +166,7 @@ class Products extends Component {
         event.preventDefault();
         this.setState({ 'openedit' :true});
         this.setState({
+            oldname : params.name ,
             name : params.name ,
             type : params.type,
             price : params.price ,
@@ -171,7 +180,7 @@ class Products extends Component {
     saveEdit = params => event => {
                 const cookies = new Cookies();
                 event.preventDefault();
-                fetch('http://localhost:5050/api/products?name='+params.name, {
+                fetch('http://localhost:5050/api/products?name='+this.state.oldname, {
                     method: 'PUT',
                     body: JSON.stringify(this.state),
                     headers: {
@@ -183,12 +192,11 @@ class Products extends Component {
                         if (results.status === 200) {
                             this.setState({ 'openedit' :false , opensnack : true , snackmessage : 'The Product is Edited '});
                         } else {
-                            const error = new Error(results.error);
-                            throw error
+                            alert('Error logging in please try again error '+results);
                         } }
                     )
                     .catch(err => {
-                        alert('Error logging in please try again');
+                        alert('Error logging in please try again '+err);
                     });
 
     };
@@ -197,7 +205,6 @@ class Products extends Component {
     }
 
     render() {
-        //const cookies = new Cookies();
         const { classes } = this.props
         return (
             <div>
@@ -208,14 +215,13 @@ class Products extends Component {
                         <Grid container spacing={4}>
                             {this.state.cards.map(card => (
                                 <Grid item key={card.id} xs={12} sm={6} md={4}>
-
                                     <Card className={classes.card}>
                                         <CardMedia
                                             className={classes.cardMedia}
-                                            image="https://source.unsplash.com/random"
+                                            image="https://images.unsplash.com/photo-1541807084-5c52b6b3adef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
                                             title="Image title"
                                         />
-                                        <CardContent className={classes.cardContent}>
+                                        <CardContent className={classes.cardContent} >
                                             <Typography gutterBottom variant="h4" component="h4" >
                                                 {card.name}
                                             </Typography>
@@ -372,6 +378,30 @@ class Products extends Component {
                                                 </DialogActions>
                                             </Dialog>
 
+                                            <Dialog      fullWidth className={classes.dialog}  onClose={this.handleCloseview(card)} aria-labelledby="customized-dialog-title" open={this.state.openview}>
+                                                <DialogTitle id="customized-dialog-title" onClose={this.handleCloseview(card)}>
+                                                    {this.state.name}
+                                                </DialogTitle>
+                                                <CardMedia
+                                                    className={classes.cardMedia}
+                                                    image="https://images.unsplash.com/photo-1541807084-5c52b6b3adef?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=crop&w=334&q=80"
+                                                    title="Image title"
+                                                />
+
+                                                <DialogContent dividers>
+                                                    <Typography gutterBottom>Name : {this.state.name}</Typography>
+                                                    <Typography gutterBottom >Price : {this.state.price} Euro  </Typography>
+                                                    <Typography gutterBottom >Type :  {this.state.type}</Typography>
+                                                    <Typography gutterBottom > Warranty Years : {this.state.warranty_years} </Typography>
+                                                    <Typography gutterBottom > Rate : {this.state.rating}/10</Typography>
+                                                    <Typography gutterBottom>available : {this.state.available} </Typography>
+                                                </DialogContent>
+                                                <DialogActions>
+                                                    <Button autoFocus onClick={this.handleCloseview(card)} color="primary">
+                                                        Quit
+                                                    </Button>
+                                                </DialogActions>
+                                            </Dialog>
                                         </CardActions>
                                     </Card>
 

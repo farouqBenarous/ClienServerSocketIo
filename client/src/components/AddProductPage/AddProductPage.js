@@ -1,25 +1,4 @@
 import React from 'react';
-/*
-import AppBar from '@material-ui/core/AppBar';
-import CameraIcon from '@material-ui/icons/PhotoCamera';
-import Button from '@material-ui/core/Button';
-import Card from '@material-ui/core/Card';
-import CardActions from '@material-ui/core/CardActions';
-import CardContent from '@material-ui/core/CardContent';
-import CardMedia from '@material-ui/core/CardMedia';
-import Grid from '@material-ui/core/Grid';
-import Container from '@material-ui/core/Container';
-import Link from '@material-ui/core/Link';
-import CssBaseline from '@material-ui/core/CssBaseline';
-import Toolbar from '@material-ui/core/Toolbar';
-import Typography from '@material-ui/core/Typography';
-//import socketIOClient from "socket.io-client";
-//import Products from "./Products";
-import Grid from "@material-ui/core/Grid";
-import Link from "@material-ui/core/Link";
-import FormControlLabel from "@material-ui/core/FormControlLabel";
-import Checkbox from "@material-ui/core/Checkbox";
-*/
 import { amber, green } from '@material-ui/core/colors';
 import NavBar from '../NavBar/NavBar';
 import {withStyles} from '@material-ui/core/styles';

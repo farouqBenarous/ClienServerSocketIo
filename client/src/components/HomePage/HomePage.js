@@ -3,9 +3,6 @@ import NavBar from '../NavBar/NavBar';
 import {withStyles} from '@material-ui/core/styles';
 import Header from "./Header";
 
-//import socketIOClient from "socket.io-client";
-
-
 const useStyles = theme => ({
     icon: {
         marginRight: theme.spacing(2),

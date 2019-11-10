@@ -24,6 +24,7 @@ function validateproduct(product) {
         rating : Joi.number().min(1).max(10).required(),
         warranty_years : Joi.number().min(1).max(10).required(),
         type: Joi.string().valid('phone', 'laptop'),
+        available : Joi.boolean().required()
 
     }) .unknown() ;
 

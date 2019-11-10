@@ -18,10 +18,11 @@ router.post('/signup', async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     user.password = await bcrypt.hash(user.password, salt);
-    await user.save();
-
     const token = user.generateAuthToken();
-    return  res.header('x-auth-token', token).send(_.pick(user, ['_id', 'firstname', 'email']))  ;
+
+    await user.save().then( (result) =>  {res.status(200).header('x-auth-token', token).json({'token' :token}).send()}  )
+    .catch( (err) => {res.status(500).send('something faild '+err)}   );
+
 });
 
 

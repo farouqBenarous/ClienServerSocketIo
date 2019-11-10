@@ -75,6 +75,7 @@ class SignupPage extends React.Component {
             return results.json()
           } else {
             const error = new Error(results.error);
+            alert('Error logging in please try again' +results);
             throw error
           } }
         )
@@ -83,7 +84,7 @@ class SignupPage extends React.Component {
           this.props.history.push('/dashboard');
         })
         .catch(err => {
-          alert('Error logging in please try again');
+          alert('Error logging in please try again' +err);
         });
   }
 

@@ -42,6 +42,11 @@ const useStyles = theme => ({
   submit: {
     margin: theme.spacing(3, 0, 2),
   },
+  heroContent: {
+    backgroundColor: theme.palette.background.paper,
+    padding: theme.spacing(8, 0, 6),
+    backgroundImage :'/img/background.jpeg'
+  }
 }) ;
 
 
@@ -75,6 +80,7 @@ class LoginPage extends React.Component {
                   return results.json()
                 } else {
                   const error = new Error(results.error);
+                  alert('Error logging in please try again error : '+results);
                   throw error
                 } }
             )
@@ -90,9 +96,9 @@ class LoginPage extends React.Component {
   render() {
     const { classes } = this.props
     return (
-        <div>
+        <div  >
         <NavBar/>
-          <Container component="main" maxWidth="xs">
+          <Container component="main" maxWidth="xs"   >
             <CssBaseline />
             <div className={classes.paper}>
               <Avatar className={classes.avatar}>

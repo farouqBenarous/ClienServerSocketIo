@@ -37,6 +37,7 @@ router.put('/'  ,auth ,async (req , res) => {
     if (_.isEmpty(result)) {
         return res.status(400).send('No product found with this name ')
     }
+
     let  del  = await Product.updateOne({name : req.query.name} ,{name : req.body.name ,type : req.body.type , price : req.body.price , rating : req.body.rating ,
         warranty_years : req.body.warranty_years ,available :   req.body . available} )
         .then((result) => { res.status(200).send('Product Change Sucessfully  new Product ' +result)})
@@ -89,7 +90,6 @@ router.get('/', async (req, res) => {
 
 // Delete a product by a given name
 router.delete('/' ,auth, async (req , res) => {
-    console.log(req.body)
     if (_.isEmpty(req.body.name) ) {
     return res.status(400).send('You have to specify the name if you want to delete ')
     }
